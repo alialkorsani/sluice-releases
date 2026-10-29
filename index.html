@@ -3,240 +3,483 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sluice for Mac</title>
-<meta name="description" content="Sluice is a Mac app for Claude Code with the Superpowers workflow built in: Claude plans big work, you approve the design and the plan, then it builds.">
-<meta property="og:title" content="Sluice for Mac">
-<meta property="og:description" content="A Mac app for Claude Code, with the Superpowers workflow built in.">
+<title>Sluice — Claude Code that asks before it builds</title>
+<meta name="description" content="A native Mac app for the Claude Code you already have. Quick fixes happen straight away; bigger work stops for you to approve the design and the plan before Claude writes a line. Free.">
+<meta property="og:title" content="Sluice — Claude Code that asks before it builds">
+<meta property="og:description" content="A native Mac app for Claude Code. You approve the design and the plan before Claude builds. Free, uses your own Claude login.">
 <meta property="og:image" content="assets/flow.png">
+<meta name="theme-color" content="#0A0F1A">
 <link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
 <style>
   :root {
-    --bg: #f6f6f4;
-    --surface: #ffffff;
-    --text: #1d1d1f;
-    --muted: #5f5f66;
-    --line: #e3e3e0;
-    --accent: #2f6fed;
-    --accent-text: #ffffff;
-    --approve: #b5590c;
-    --approve-bg: #fbecd9;
-    --shadow: 0 24px 60px rgba(20, 20, 30, 0.14);
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #141416;
-      --surface: #1d1d20;
-      --text: #f2f2f4;
-      --muted: #a1a1aa;
-      --line: #2c2c31;
-      --accent: #4f8bff;
-      --accent-text: #ffffff;
-      --approve: #f0a35a;
-      --approve-bg: #3a2817;
-      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #141416;
-    --surface: #1d1d20;
-    --text: #f2f2f4;
-    --muted: #a1a1aa;
-    --line: #2c2c31;
-    --accent: #4f8bff;
-    --accent-text: #ffffff;
-    --approve: #f0a35a;
-    --approve-bg: #3a2817;
-    --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    --bg: #0A0F1A;
+    --surface: #0D1422;
+    --surface-hi: #0F1A2C;
+    --surface-tint: #12324A;
+    --line: #1A2438;
+    --line-hi: #22304A;
+    --line-strong: #2A3A57;
+    --text: #E8EEF7;
+    --heading: #F4F7FB;
+    --body: #A3B1C6;
+    --muted: #94A3B8;
+    --faint: #7F8DA3;
+    --soft: #C9D3E1;
+    --water: #7DD3F5;
+    --water-soft: #B5E6FA;
+    --gate: #F08A4B;
+    --gate-tint: rgba(240, 138, 75, 0.12);
+    --gate-ink: #1A0E05;
+    --sans: Geist, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
     color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: 72px; }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    font: 16px/1.55 var(--sans);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
   }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  a { color: var(--water); text-decoration: none; }
+  a:hover { color: var(--water-soft); }
   img { max-width: 100%; height: auto; display: block; }
-  code { font: 0.92em ui-monospace, "SF Mono", Menlo, monospace; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  svg { flex: 0 0 auto; }
+  .mono { font-family: var(--mono); }
+  :focus-visible { outline: 2px solid var(--water); outline-offset: 3px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
-  header.top {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 16px;
-  }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--text); }
-  .brand:hover { text-decoration: none; }
-  .brand img { width: 32px; height: 32px; }
-  .top nav a { color: var(--muted); margin-left: 20px; font-size: 15px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+  section { padding-top: 140px; }
 
-  .hero { text-align: center; padding: 56px 16px 40px; }
-  .hero .icon { width: 128px; height: 128px; margin: 0 auto 22px; }
-  .hero h1 {
-    font-size: clamp(36px, 6vw, 60px); line-height: 1.08; letter-spacing: -0.02em;
-    margin: 0 0 16px;
+  /* Nav */
+  .top {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(10, 15, 26, 0.82);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
   }
-  .hero p.lede { font-size: clamp(18px, 2.4vw, 22px); color: var(--muted); max-width: 680px; margin: 0 auto 30px; }
-  .download {
+  .top nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 14px; padding-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600; }
+  .brand:hover { color: var(--text); }
+  .brand img { width: 28px; height: 28px; }
+  .navlinks { display: flex; gap: 28px; font-size: 14px; }
+  .navlinks a, .foot a { color: var(--muted); }
+  .navlinks a:hover, .foot a:hover { color: var(--text); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 52px; padding: 0 26px; border-radius: 12px;
+    font-size: 17px; font-weight: 600; white-space: nowrap;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn-primary { background: var(--text); color: var(--bg); box-shadow: 0 0 0 1px rgba(255,255,255,.1), 0 10px 30px rgba(125,211,245,.12); }
+  .btn-primary:hover { background: #fff; color: var(--bg); }
+  .btn-ghost { border: 1px solid var(--line-hi); color: var(--soft); font-weight: 500; padding: 0 22px; }
+  .btn-ghost:hover { border-color: #3A4A66; color: #fff; }
+  .btn-sm { min-height: 36px; padding: 0 14px; border-radius: 8px; font-size: 14px; gap: 8px; box-shadow: none; }
+  .btn-md { min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 15px; box-shadow: none; }
+
+  /* Hero */
+  .hero { padding-top: 88px; text-align: center; }
+  .pill {
     display: inline-flex; align-items: center; gap: 10px;
-    background: var(--accent); color: var(--accent-text);
-    padding: 14px 26px; border-radius: 999px; font-weight: 600; font-size: 18px;
+    padding: 6px 14px 6px 6px; border: 1px solid var(--line-hi); border-radius: 999px;
+    background: #0F1626; color: var(--muted); font: 13px var(--mono);
   }
-  .download:hover { text-decoration: none; filter: brightness(1.08); }
-  .download svg { width: 20px; height: 20px; }
-  .meta { color: var(--muted); font-size: 14px; margin-top: 14px; }
-  .meta a { color: var(--muted); text-decoration: underline; }
-
-  .shot { margin: 28px auto 0; border-radius: 14px; box-shadow: var(--shadow); border: 1px solid var(--line); }
-
-  .flow {
-    display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;
-    margin: 72px 0 10px; font-size: 15px; color: var(--muted);
+  .pill:hover { color: var(--text); }
+  .pill b { padding: 3px 9px; border-radius: 999px; background: var(--surface-tint); color: var(--water); font-weight: 500; }
+  h1 {
+    margin: 28px auto 0; max-width: 900px;
+    font-size: clamp(42px, 7vw, 84px); line-height: 1.02; letter-spacing: -0.045em; font-weight: 700; color: var(--heading);
   }
-  .flow .step { padding: 4px 0; }
-  .flow .gate { background: var(--approve-bg); color: var(--approve); font-weight: 600; padding: 4px 12px; border-radius: 999px; }
-  .flow .arrow { opacity: 0.5; }
-  .flow-note { text-align: center; color: var(--muted); max-width: 640px; margin: 0 auto; font-size: 16px; }
+  h1 em { font-style: normal; color: var(--gate); }
+  .lede { margin: 26px auto 0; max-width: 640px; font-size: clamp(17px, 2.1vw, 20px); line-height: 1.55; color: var(--body); }
+  .actions { margin-top: 36px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .assure { margin: 20px 0 0; font: 13px/1.8 var(--mono); color: var(--faint); }
 
-  section.features { padding: 64px 16px 24px; }
-  section h2 { font-size: clamp(28px, 4vw, 38px); letter-spacing: -0.015em; text-align: center; margin: 0 0 36px; line-height: 1.15; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
-  .card h3 { margin: 0 0 6px; font-size: 18px; }
-  .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
-
-  .split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; padding: 56px 16px; }
-  .split.reverse { grid-template-columns: 0.9fr 1.1fr; }
-  /* Grid items may shrink below their images' width, or a phone scrolls sideways. */
-  .split > *, .grid > * { min-width: 0; }
-  .split.reverse .copy { order: 2; }
-  .split h2 { text-align: left; margin-bottom: 14px; }
-  .split p { color: var(--muted); margin: 0 0 12px; }
-  .split img { border-radius: 14px; border: 1px solid var(--line); box-shadow: var(--shadow); }
-  .split .narrow { width: 100%; max-width: 400px; justify-self: center; }
-
-  section.start { padding: 40px 16px 72px; }
-  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 auto; max-width: 720px; display: grid; gap: 14px; }
-  ol.steps li {
-    counter-increment: step; background: var(--surface); border: 1px solid var(--line);
-    border-radius: 14px; padding: 18px 20px 18px 64px; position: relative;
+  .shot-wrap { position: relative; margin: 64px auto 0; max-width: 1080px; }
+  .shot-frame { border-radius: 14px; padding: 1px; background: linear-gradient(180deg, var(--line-strong), #121A2A); }
+  .shot-frame img { width: 100%; border-radius: 13px; box-shadow: 0 40px 120px rgba(0,0,0,.6); }
+  .gate-card {
+    position: absolute; left: 50%; bottom: -40px; transform: translateX(-50%);
+    width: min(700px, 92%);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    padding: 16px 18px; border-radius: 14px; text-align: left;
+    background: #131C2E; border: 1px solid var(--gate);
+    box-shadow: 0 0 0 4px rgba(240,138,75,.10), 0 24px 60px rgba(0,0,0,.55);
   }
-  ol.steps li::before {
-    content: counter(step); position: absolute; left: 20px; top: 17px;
-    width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--accent-text);
-    font-weight: 700; font-size: 15px; display: grid; place-items: center;
-  }
-  ol.steps strong { display: block; }
-  ol.steps span { color: var(--muted); font-size: 15.5px; }
-  .start .cta { text-align: center; margin-top: 32px; }
+  .gate-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--gate-tint); color: var(--gate); display: flex; align-items: center; justify-content: center; }
+  .gate-copy { flex: 1 1 260px; min-width: 0; }
+  .gate-copy strong { display: block; font-size: 15px; color: var(--heading); }
+  .gate-copy span { display: block; margin-top: 2px; font-size: 13.5px; color: var(--body); }
+  .gate-buttons { display: flex; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 8px; font-size: 13.5px; font-weight: 500; }
+  .chip-quiet { border: 1px solid var(--line-strong); color: var(--soft); }
+  .chip-gate { background: var(--gate); color: var(--gate-ink); font-weight: 600; }
 
-  footer { border-top: 1px solid var(--line); padding: 26px 0 40px; color: var(--muted); font-size: 14px; }
-  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
-  footer a { color: var(--muted); }
+  /* Proof strip */
+  .proof { padding-top: 112px; }
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px;
+    border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--line);
+  }
+  .stat { background: var(--surface); padding: 26px 24px; }
+  .stat .num { font: 500 30px var(--mono); letter-spacing: -0.02em; color: var(--heading); }
+  .stat .num small { font-size: 18px; color: var(--faint); white-space: nowrap; }
+  .stat p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .footnote { margin: 14px 0 0; text-align: center; font: 12px var(--mono); color: var(--faint); }
+
+  /* Section headings */
+  .eyebrow { margin: 0; font: 13px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--water); }
+  .eyebrow.gate { color: var(--gate); }
+  h2 { margin: 14px 0 0; max-width: 820px; font-size: clamp(32px, 4.6vw, 52px); line-height: 1.08; letter-spacing: -0.035em; font-weight: 700; color: var(--heading); }
+  .intro { margin: 18px 0 0; max-width: 640px; font-size: 18px; line-height: 1.6; color: var(--body); }
+
+  /* Cards */
+  .cards { margin-top: 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card { padding: 28px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+  .card h3 { margin: 0 0 8px; font-size: 19px; font-weight: 600; color: var(--heading); }
+  .card p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--body); }
+  .card p + * { margin-top: 20px; }
+  .card .index { font: 13px var(--mono); color: var(--faint); margin-bottom: 14px; }
+  .step-num { width: 32px; height: 32px; border-radius: 8px; background: var(--surface-tint); color: var(--water); display: flex; align-items: center; justify-content: center; font: 14px var(--mono); margin-bottom: 18px; }
+
+  .prompt { padding: 14px 16px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); font: 13px var(--mono); color: var(--soft); }
+  .prompt b { font-weight: 400; color: var(--water); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .options { display: grid; gap: 6px; font-size: 13px; }
+  .options div { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line-hi); color: var(--soft); }
+  .options div:first-child { background: var(--surface-tint); border-color: var(--surface-tint); color: var(--water-soft); font-weight: 500; }
+
+  /* Flow rail */
+  .rail-box { margin-top: 48px; padding: 28px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); overflow-x: auto; }
+  .rail { display: flex; align-items: center; gap: 10px; min-width: 880px; margin: 0; padding: 0; list-style: none; font-size: 14px; font-weight: 500; }
+  .rail li { display: contents; }
+  .rail .stage { padding: 10px 14px; border-radius: 10px; background: var(--surface-tint); color: var(--water-soft); white-space: nowrap; }
+  .rail .stage.gate { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--gate); background: rgba(240,138,75,.10); color: var(--gate); }
+  .rail .link { flex: 1; min-width: 12px; height: 1px; background: var(--line-strong); }
+  .rail-box + .cards { margin-top: 16px; }
+
+  /* Comparison */
+  .table-box { margin-top: 48px; border-radius: 16px; border: 1px solid var(--line); overflow-x: auto; }
+  table { width: 100%; min-width: 680px; border-collapse: collapse; font-size: 15px; text-align: left; }
+  th, td { padding: 18px 22px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child th, tr:last-child td { border-bottom: 0; }
+  thead th { padding-top: 16px; padding-bottom: 16px; background: var(--surface); font: 13px var(--mono); color: var(--faint); font-weight: 400; }
+  thead th.us { background: var(--surface-hi); font: 600 14px var(--sans); color: var(--heading); }
+  thead th.us span { display: inline-flex; align-items: center; gap: 8px; }
+  thead th.us img { width: 18px; height: 18px; }
+  tbody th { color: var(--soft); font-weight: 500; width: 26%; }
+  tbody td { color: var(--faint); width: 32%; }
+  tbody td.us { background: #0D1626; color: var(--text); width: 42%; }
+
+  /* Feature splits */
+  .splits { display: grid; gap: 120px; }
+  .split { display: flex; gap: 56px; align-items: center; }
+  .split.reverse { flex-direction: row-reverse; }
+  .split .copy { flex: 1 1 380px; min-width: 0; }
+  .split .copy h2 { margin: 0; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -0.03em; }
+  .split .copy p { margin: 18px 0 0; font-size: 17px; line-height: 1.6; color: var(--body); }
+  .split .media { flex: 1.4 1 520px; min-width: 0; }
+  .split .media > img { border-radius: 14px; border: 1px solid var(--line-hi); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .split .media.panel { display: flex; justify-content: center; padding: 40px 24px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+  .split .media.panel img { width: 100%; max-width: 380px; border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+
+  /* Get started */
+  #start h2 { margin: 0 auto; text-align: center; }
+  .card h3.small { font-size: 18px; }
+  .command {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 6px 6px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line);
+    font: 14px var(--mono); color: var(--text);
+  }
+  .command .dollar { color: var(--faint); }
+  .copy-btn {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px;
+    border: 0; border-radius: 8px; background: transparent; color: var(--muted);
+    font: 12px var(--mono); cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--text); background: var(--surface-hi); }
+
+  /* FAQ */
+  .faq { max-width: 820px; }
+  .faq h2 { margin-bottom: 32px; font-size: clamp(28px, 3.4vw, 40px); }
+  details { border-top: 1px solid var(--line); padding: 22px 0; }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary {
+    display: flex; justify-content: space-between; gap: 16px;
+    font-size: 17px; font-weight: 500; color: var(--text); cursor: pointer; list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary .plus { color: var(--faint); font-size: 22px; line-height: 1; transition: transform .2s; }
+  details[open] summary .plus { transform: rotate(45deg); }
+  details p { margin: 12px 0 0; font-size: 15px; line-height: 1.65; color: var(--body); }
+
+  /* Final CTA */
+  .final { padding-top: 160px; }
+  .final-box { padding: 72px 32px; border-radius: 20px; border: 1px solid var(--line-hi); background: var(--surface); text-align: center; }
+  .final-box img { width: 88px; height: 88px; margin: 0 auto; }
+  .final-box h2 { margin: 24px auto 0; max-width: 720px; font-size: clamp(32px, 5vw, 56px); line-height: 1.05; letter-spacing: -0.04em; }
+  .final-box .actions { margin-top: 36px; }
+
+  .foot { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; padding-top: 64px; padding-bottom: 48px; font-size: 13px; color: var(--faint); }
+  .foot p { margin: 0; }
+  .foot span { display: flex; gap: 20px; flex-wrap: wrap; }
 
   @media (max-width: 760px) {
-    .split, .split.reverse { grid-template-columns: 1fr; gap: 22px; padding: 36px 16px; }
-    .split.reverse .copy { order: 0; }
-    .top nav a:not(:last-child) { display: none; }
-    .hero { padding-top: 32px; }
-    .hero .icon { width: 96px; height: 96px; }
+    section { padding-top: 96px; }
+    .hero { padding-top: 56px; }
+    .proof { padding-top: 48px; }
+    .navlinks { display: none; }
+    .gate-card { position: static; transform: none; width: 100%; margin-top: 16px; }
+    .gate-buttons { width: 100%; }
+    .gate-buttons .chip { flex: 1; justify-content: center; }
+    .split, .split.reverse { flex-direction: column; align-items: stretch; gap: 32px; }
+    .split .media, .split .copy { flex-basis: auto; }
+    .splits { gap: 80px; }
+    .final-box { padding: 56px 20px; }
   }
 </style>
 </head>
 <body>
-<header class="wrap top">
-  <a class="brand" href="#"><img src="assets/favicon.png" alt="">Sluice</a>
-  <nav>
-    <a href="#features">Features</a>
-    <a href="#start">Get started</a>
-    <a href="https://github.com/alialkorsani/sluice-releases/releases">Releases</a>
+
+<header class="top">
+  <nav class="wrap" aria-label="Main">
+    <a class="brand" href="#top"><img src="assets/favicon.png" alt="">Sluice</a>
+    <div class="navlinks">
+      <a href="#how">How it works</a>
+      <a href="#compare">vs. Terminal</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/alialkorsani/sluice-releases/releases">Changelog</a>
+    </div>
+    <a class="btn btn-primary btn-sm" data-download href="https://github.com/alialkorsani/sluice-releases/releases/latest">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+      Download
+    </a>
   </nav>
 </header>
 
-<main>
+<main id="top">
   <section class="wrap hero">
-    <img class="icon" src="assets/icon.png" alt="Sluice app icon" width="128" height="128">
-    <h1>A Mac app for Claude Code.</h1>
-    <p class="lede">Sluice runs the Claude Code you already have, with the Superpowers workflow built in. Small fixes happen straight away. Big work stops twice for you: once to approve the design, once to approve the plan.</p>
-    <a class="download" id="download" href="https://github.com/alialkorsani/sluice-releases/releases/latest">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
-      <span id="download-label">Download for Mac</span>
+    <a class="pill" href="https://github.com/alialkorsani/sluice-releases/releases/latest">
+      <b id="release-version">New</b>
+      Now available for macOS 26
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
     </a>
-    <p class="meta"><span id="download-meta">Free</span> · macOS 26 or later · Apple silicon and Intel · Needs <a href="https://code.claude.com/docs/en/overview">Claude Code</a></p>
-    <img class="shot" src="assets/flow.png" alt="Sluice showing a chat in the brainstorm stage of the Superpowers flow, with the stage bar across the top and Claude's reply in a timeline" width="2000" height="1250">
-  </section>
 
-  <div class="wrap">
-    <div class="flow" aria-label="The Superpowers flow">
-      <span class="step">Brainstorm</span><span class="arrow">›</span>
-      <span class="gate">You approve the design</span><span class="arrow">›</span>
-      <span class="step">Plan</span><span class="arrow">›</span>
-      <span class="gate">You approve the plan</span><span class="arrow">›</span>
-      <span class="step">Build</span><span class="arrow">›</span>
-      <span class="step">Review</span><span class="arrow">›</span>
-      <span class="step">Finish</span>
-    </div>
-    <p class="flow-note">Claude decides which way each request goes. You see the stage it's in, and nothing gets built until you've said yes to the design and the plan.</p>
-  </div>
+    <h1>Claude Code that <em>asks</em><br>before it builds.</h1>
+    <p class="lede">A native Mac app for the Claude Code you already have. Quick fixes happen straight away. Anything bigger stops twice — you approve the design, then the plan — before Claude writes a line.</p>
 
-  <section class="wrap features" id="features">
-    <h2>Everything Claude Code does, in a real window</h2>
-    <div class="grid">
-      <div class="card"><h3>Your own Claude login</h3><p>Sluice launches the <code>claude</code> you installed, signed in as you. No API key, and usage counts against your plan as it does in Terminal.</p></div>
-      <div class="card"><h3>Spec, plan and progress, live</h3><p>The inspector shows the spec, the plan, the lifecycle and the task ledger as Claude writes them, even in a git worktree.</p></div>
-      <div class="card"><h3>Approvals in the window</h3><p>Design, plan and permission requests appear as cards above the message box, so you answer them where you're already looking.</p></div>
-      <div class="card"><h3>Model, effort and usage</h3><p>Switch between Fable, Opus, Sonnet and Haiku, set the effort level, and see your plan's session and weekly limits, Fable included.</p></div>
-      <div class="card"><h3>Tabs and history</h3><p>Several chats per project in tabs, a searchable history, and chats Claude names for you in four words or fewer. Rename any of them.</p></div>
-      <div class="card"><h3>Paste anything</h3><p>Copy an image in WhatsApp or Preview, or files in Finder, and paste it into the message box. It's attached, ready for Claude to read.</p></div>
-    </div>
-  </section>
-
-  <section class="wrap split">
-    <div class="copy">
-      <h2>Start with a sentence</h2>
-      <p>Open a project folder and say what you want. Claude reads the code, picks the route, and for anything bigger than a quick fix, brainstorms with you before it writes a line.</p>
-      <p>Starters for features, bugs, explanations and tests get you going.</p>
-    </div>
-    <img src="assets/new-chat.png" alt="A new chat in Sluice asking what Claude should work on, with starters and the flow's stages below" width="2000" height="1250" loading="lazy">
-  </section>
-
-  <section class="wrap split reverse">
-    <img class="narrow" src="assets/popover.png" alt="The model popover listing Default, Fable, Opus, Sonnet and Haiku, with effort levels from Low to Max" width="717" height="673" loading="lazy">
-    <div class="copy">
-      <h2>The right model for the job</h2>
-      <p>Pick a model and an effort level from the message box. The next message uses them, and the chat carries on where it was.</p>
-      <p>The same popover shows how much of your plan you've used: this session, this week for all models, and this week for Fable.</p>
-    </div>
-  </section>
-
-  <section class="wrap start" id="start">
-    <h2>Get started</h2>
-    <ol class="steps">
-      <li><strong>Install Claude Code and sign in.</strong><span>Sluice uses it to do the work. Follow the <a href="https://code.claude.com/docs/en/setup">Claude Code setup guide</a>, then run <code>claude</code> once in Terminal to sign in.</span></li>
-      <li><strong>Download Sluice and drag it to Applications.</strong><span>It's signed and notarized by Apple, and updates itself when a new version is out.</span></li>
-      <li><strong>Open a project folder.</strong><span>Drop a folder on the window or choose Open Folder, then tell Claude what to work on.</span></li>
-    </ol>
-    <div class="cta">
-      <a class="download" href="https://github.com/alialkorsani/sluice-releases/releases/latest" data-download>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
-        <span>Download for Mac</span>
+    <div class="actions">
+      <a class="btn btn-primary" id="download" href="https://github.com/alialkorsani/sluice-releases/releases/latest">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+        <span id="download-label">Download for Mac — Free</span>
       </a>
+      <a class="btn btn-ghost" href="#how">
+        See how it works
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m6 13 6 6 6-6"/></svg>
+      </a>
+    </div>
+    <p class="assure"><span id="download-meta">Free</span> · Uses your Claude login — no API key · Signed &amp; notarized · Apple silicon &amp; Intel · Auto-updates</p>
+
+    <div class="shot-wrap">
+      <div class="shot-frame">
+        <img src="assets/flow.png" alt="Sluice with a chat in the Brainstorm stage: the stage bar runs across the top and Claude's questions sit in a timeline" width="2000" height="1250">
+      </div>
+      <div class="gate-card" aria-label="Example of Sluice's design approval card">
+        <div class="gate-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+        </div>
+        <div class="gate-copy">
+          <strong>Approve the design?</strong>
+          <span>Claude wrote the spec. Read it in Workflow Files, then approve it or ask for changes.</span>
+        </div>
+        <div class="gate-buttons" aria-hidden="true">
+          <span class="chip chip-quiet">Request Changes</span>
+          <span class="chip chip-gate">Approve Design</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap proof" aria-label="Performance">
+    <div class="stats">
+      <div class="stat"><div class="num">216 ms</div><p>Launch to first frame. Native SwiftUI, not a browser in a box.</p></div>
+      <div class="stat"><div class="num">10,352<small> / 54 ms</small></div><p>Stream events decoded, off the main thread. Typing never stutters.</p></div>
+      <div class="stat"><div class="num">+0.1 MB</div><p>Left behind when a chat closes. No leaks, no zombie processes.</p></div>
+      <div class="stat"><div class="num">$0</div><p>Extra. Claude runs on your existing plan, exactly as in Terminal.</p></div>
+    </div>
+    <p class="footnote">Measured on M5 Pro, Release build. Every change is profiled before it ships.</p>
+  </section>
+
+  <section class="wrap">
+    <p class="eyebrow gate">The problem</p>
+    <h2>Agents are fast. Undoing them isn't.</h2>
+    <div class="cards">
+      <div class="card"><div class="index">01</div><h3>It codes before you agree</h3><p>You asked for tags on todos. Twelve files later, you find out it guessed the wrong data model.</p></div>
+      <div class="card"><div class="index">02</div><h3>Prompts scroll out of sight</h3><p>Permission requests land in a wall of terminal output, so you either babysit it or approve everything.</p></div>
+      <div class="card"><div class="index">03</div><h3>The plan lives in a file you never open</h3><p>Specs and task lists get written to disk and forgotten. You only see the result.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap" id="how">
+    <p class="eyebrow">How it works</p>
+    <h2>Two gates. You hold the keys.</h2>
+    <p class="intro">Claude picks the route for every request. A one-line fix just happens. Real work goes through the Superpowers flow, and the app — not the model — makes sure it stops for you.</p>
+
+    <div class="rail-box">
+      <ol class="rail" aria-label="The Superpowers flow">
+        <li><span class="stage">Brainstorm</span><span class="link"></span></li>
+        <li><span class="stage gate"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>You approve the design</span><span class="link"></span></li>
+        <li><span class="stage">Plan</span><span class="link"></span></li>
+        <li><span class="stage gate"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>You approve the plan</span><span class="link"></span></li>
+        <li><span class="stage">Build</span><span class="link"></span></li>
+        <li><span class="stage">Review</span><span class="link"></span></li>
+        <li><span class="stage">Finish</span></li>
+      </ol>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>1 · Say it in a sentence</h3>
+        <p>Open a project folder and describe what you want. Claude reads the code and asks the questions a good engineer would.</p>
+        <div class="prompt">Add tags to todos, and let <b>list</b> filter by tag.</div>
+      </div>
+      <div class="card">
+        <h3>2 · Approve what matters</h3>
+        <p>The spec and the plan appear in the inspector as Claude writes them. Nothing gets built until you click Approve.</p>
+        <div class="chips" aria-hidden="true"><span class="chip chip-quiet">Request Changes</span><span class="chip chip-gate">Approve Plan</span></div>
+      </div>
+      <div class="card">
+        <h3>3 · Land it your way</h3>
+        <p>Claude builds on its own branch, reviews its work, then asks how it should land.</p>
+        <div class="options"><div>Merge Locally</div><div>Push and Open a PR</div><div>Keep the Branch</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="compare">
+    <p class="eyebrow">Already live in Terminal?</p>
+    <h2>Same Claude. Same login.<br>Nothing to remember.</h2>
+    <div class="table-box">
+      <table>
+        <thead>
+          <tr><td></td><th scope="col">claude in Terminal</th><th scope="col" class="us"><span><img src="assets/favicon.png" alt="">Sluice</span></th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Design &amp; plan approval</th><td>Up to the model</td><td class="us">Two gates the app enforces</td></tr>
+          <tr><th scope="row">Permission prompts</th><td>Inline with the output</td><td class="us">A card above the message box: Allow or Deny</td></tr>
+          <tr><th scope="row">Spec, plan, progress</th><td>Markdown files on disk</td><td class="us">Live in the inspector, even in a worktree</td></tr>
+          <tr><th scope="row">Model &amp; effort</th><td class="mono">/model · /effort</td><td class="us">One popover, with your plan's usage beside it</td></tr>
+          <tr><th scope="row">Many chats</th><td>A terminal tab each</td><td class="us">Tabs per project, searchable history, auto-named</td></tr>
+          <tr><th scope="row">Images &amp; files</th><td>Type a path</td><td class="us">Paste from anywhere</td></tr>
+          <tr><th scope="row">What it costs</th><td>Your Claude plan</td><td class="us">Your Claude plan. Sluice is free.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="wrap splits">
+    <div class="split reverse">
+      <div class="copy">
+        <h2>Start with a sentence.</h2>
+        <p>Starters for features, bugs, explanations and tests. Several chats per project in tabs, each named for you in four words or fewer.</p>
+      </div>
+      <div class="media">
+        <img src="assets/new-chat.png" alt="A new chat in Sluice asking what Claude should work on, with starters and the flow's stages below" width="2000" height="1250" loading="lazy">
+      </div>
+    </div>
+    <div class="split">
+      <div class="copy">
+        <h2>The right model. Your limits, in view.</h2>
+        <p>Fable, Opus, Sonnet or Haiku, low to max effort, from the message box. The same popover shows how much of your plan is left this session and this week.</p>
+      </div>
+      <div class="media panel">
+        <img src="assets/popover.png" alt="The model popover listing Default, Fable, Opus, Sonnet and Haiku, with effort levels from Low to Max" width="717" height="673" loading="lazy">
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="start">
+    <h2>Running in two minutes.</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="step-num">1</div>
+        <h3 class="small">Sign in to Claude Code</h3>
+        <p>Already done if you use it today. Otherwise follow the <a href="https://code.claude.com/docs/en/setup">setup guide</a>, then run:</p>
+        <div class="command">
+          <span><span class="dollar">$</span> claude</span>
+          <button class="copy-btn" type="button" data-copy="claude" aria-label="Copy the command">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            <span class="copy-label">Copy</span>
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="step-num">2</div>
+        <h3 class="small">Download Sluice</h3>
+        <p>Drag it to Applications. Signed and notarized by Apple; it updates itself.</p>
+        <a class="btn btn-primary btn-md" data-download href="https://github.com/alialkorsani/sluice-releases/releases/latest">Download .dmg</a>
+      </div>
+      <div class="card">
+        <div class="step-num">3</div>
+        <h3 class="small">Open a folder, say what you want</h3>
+        <p>Sluice finds your <span class="mono">claude</span> install on its own. No keys, no config files, no plugin setup.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap faq" id="faq">
+    <h2>Questions</h2>
+    <details>
+      <summary>Does it cost anything?<span class="plus" aria-hidden="true">+</span></summary>
+      <p>Sluice is free. Claude does the work on your existing Claude plan, and usage counts the same as it does in Terminal.</p>
+    </details>
+    <details>
+      <summary>Do I need an API key?<span class="plus" aria-hidden="true">+</span></summary>
+      <p>No. Sluice launches the <span class="mono">claude</span> you installed, signed in as you.</p>
+    </details>
+    <details>
+      <summary>Does Sluice see or send my code?<span class="plus" aria-hidden="true">+</span></summary>
+      <p>Sluice never calls an API itself. Claude Code does the work on your Mac, exactly as it does in Terminal; Sluice puts a window on it.</p>
+    </details>
+    <details>
+      <summary>I already use the Superpowers plugin.<span class="plus" aria-hidden="true">+</span></summary>
+      <p>Sluice has Superpowers built in. If it finds your plugin too, it warns you so skills don't load twice, and leaves the choice to you.</p>
+    </details>
+    <details>
+      <summary>What do I need?<span class="plus" aria-hidden="true">+</span></summary>
+      <p>macOS 26 or later on Apple silicon or Intel, and Claude Code installed and signed in.</p>
+    </details>
+  </section>
+
+  <section class="wrap final">
+    <div class="final-box">
+      <img src="assets/icon.png" alt="Sluice app icon" width="88" height="88" loading="lazy">
+      <h2>Let Claude build.<br>Keep the final say.</h2>
+      <div class="actions">
+        <a class="btn btn-primary" data-download href="https://github.com/alialkorsani/sluice-releases/releases/latest">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+          Download for Mac — Free
+        </a>
+      </div>
+      <p class="assure">macOS 26+ · Needs Claude Code</p>
     </div>
   </section>
 </main>
 
-<footer>
-  <div class="wrap">
-    <span>Sluice by alialkorsani</span>
-    <span>Claude and Claude Code are products of Anthropic. Sluice is an independent app, not made by Anthropic.</span>
-    <a href="https://github.com/alialkorsani/sluice-releases/releases">All releases</a>
-  </div>
+<footer class="wrap foot">
+  <p>Built on <a href="https://github.com/obra/superpowers">Superpowers</a> (MIT). Not affiliated with Anthropic.</p>
+  <span><a href="https://github.com/alialkorsani/sluice-releases/releases">Releases</a><a href="https://github.com/alialkorsani/sluice-releases">GitHub</a></span>
 </footer>
 
 <script>
@@ -254,13 +497,31 @@
       document.querySelectorAll("#download, [data-download]").forEach((link) => { link.href = dmg.browser_download_url; });
       const version = String(release.tag_name || "").replace(/^v/, "");
       const megabytes = (dmg.size / 1048576).toFixed(1);
-      document.getElementById("download-label").textContent = version ? `Download Sluice ${version}` : "Download for Mac";
+      if (version) {
+        document.getElementById("download-label").textContent = `Download Sluice ${version} — Free`;
+        document.getElementById("release-version").textContent = version;
+      }
       document.getElementById("download-meta").textContent = `Free · ${megabytes} MB`;
     } catch (error) {
       // Offline or rate-limited: the links still open the releases page.
       console.warn("Couldn't read the latest release", error);
     }
   })();
+
+  // Copy buttons: the clipboard needs a secure context, which Pages provides.
+  document.querySelectorAll("[data-copy]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const label = button.querySelector(".copy-label");
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy);
+        label.textContent = "Copied";
+      } catch (error) {
+        console.warn("Couldn't copy", error);
+        label.textContent = "Select it";
+      }
+      setTimeout(() => { label.textContent = "Copy"; }, 1600);
+    });
+  });
 </script>
 </body>
 </html>
